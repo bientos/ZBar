@@ -156,7 +156,7 @@ static int qr_finder_vline_cmp(const void *_a,const void *_b){
   const qr_finder_line *b;
   a=(const qr_finder_line *)_a;
   b=(const qr_finder_line *)_b;
-  return ((a->pos[0]>b->pos[0])-(a->pos[0]<b->pos[0])<<1)+
+  return (((a->pos[0] > b->pos[0]) - (a->pos[0] < b->pos[0])) << 1)+
    (a->pos[1]>b->pos[1])-(a->pos[1]<b->pos[1]);
 }
 
@@ -198,7 +198,7 @@ static int qr_finder_cluster_lines(qr_finder_cluster *_clusters,
       /*The clustering threshold is proportional to the size of the lines,
          since minor noise in large areas can interrupt patterns more easily
          at high resolutions.*/
-      thresh=a->len+7>>2;
+      thresh=(a->len + 7) >> 2;
       if(abs(a->pos[1-_v]-b->pos[1-_v])>thresh)break;
       if(abs(a->pos[_v]-b->pos[_v])>thresh)continue;
       if(abs(a->pos[_v]+a->len-b->pos[_v]-b->len)>thresh)continue;
@@ -277,8 +277,8 @@ static int qr_finder_center_cmp(const void *_a,const void *_b){
   const qr_finder_center *b;
   a=(const qr_finder_center *)_a;
   b=(const qr_finder_center *)_b;
-  return ((b->nedge_pts>a->nedge_pts)-(b->nedge_pts<a->nedge_pts)<<2)+
-   ((a->pos[1]>b->pos[1])-(a->pos[1]<b->pos[1])<<1)+
+  return (((b->nedge_pts>a->nedge_pts)-(b->nedge_pts<a->nedge_pts))<<2)+
+   (((a->pos[1]>b->pos[1])-(a->pos[1]<b->pos[1]))<<1)+
    (a->pos[0]>b->pos[0])-(a->pos[0]<b->pos[0]);
 }
 
@@ -534,15 +534,15 @@ static void qr_line_fit(qr_line _l,int _x0,int _y0,
      compute a shift factor to scale things down into a managable range.
     We ensure that the product of any two of _l[0] and _l[1] fits within _res
      bits, which allows computation of line intersections without overflow.*/
-  dshift=QR_MAXI(0,QR_MAXI(qr_ilog(u),qr_ilog(abs(v)))+1-(_res+1>>1));
+  dshift=QR_MAXI(0,QR_MAXI(qr_ilog(u),qr_ilog(abs(v))) + 1 - ((_res+1) >> 1));
   dround=(1<<dshift)>>1;
   if(_sxx>_syy){
-    _l[0]=v+dround>>dshift;
-    _l[1]=u+w+dround>>dshift;
+    _l[0]=(v+dround) >> dshift;
+    _l[1]=(u+w+dround) >> dshift;
   }
   else{
-    _l[0]=u+w+dround>>dshift;
-    _l[1]=v+dround>>dshift;
+    _l[0]=(u+w+dround)>>dshift;
+    _l[1]=(v+dround)>>dshift;
   }
   _l[2]=-(_x0*_l[0]+_y0*_l[1]);
 }
@@ -580,12 +580,12 @@ static void qr_line_fit_points(qr_line _l,qr_point *_p,int _np,int _res){
   xbar=(sx+(_np>>1))/_np;
   ybar=(sy+(_np>>1))/_np;
   sshift=QR_MAXI(0,qr_ilog(_np*QR_MAXI(QR_MAXI(xmax-xbar,xbar-xmin),
-   QR_MAXI(ymax-ybar,ybar-ymin)))-(QR_INT_BITS-1>>1));
+   QR_MAXI(ymax-ybar,ybar-ymin)))-((QR_INT_BITS-1) >> 1));
   sround=(1<<sshift)>>1;
   sxx=sxy=syy=0;
   for(i=0;i<_np;i++){
-    dx=_p[i][0]-xbar+sround>>sshift;
-    dy=_p[i][1]-ybar+sround>>sshift;
+    dx=(_p[i][0]-xbar+sround) >> sshift;
+    dy=(_p[i][1]-ybar+sround) >> sshift;
     sxx+=dx*dx;
     sxy+=dx*dy;
     syy+=dy*dy;
@@ -747,9 +747,9 @@ static void qr_hom_init(qr_hom *_hom,int _x0,int _y0,
   _hom->fwd[1][0]=QR_FIXMUL(dy10,a20+a22,r1,s1);
   _hom->fwd[1][1]=QR_FIXMUL(dy20,a21+a22,r1,s1);
   _hom->y0=_y0;
-  _hom->fwd[2][0]=a20+r1>>s1;
-  _hom->fwd[2][1]=a21+r1>>s1;
-  _hom->fwd22=s1>_res?a22+(r1>>_res)>>s1-_res:a22<<_res-s1;
+  _hom->fwd[2][0]=(a20+r1) >> s1;
+  _hom->fwd[2][1]=(a21+r1) >> s1;
+  _hom->fwd22= (s1 > _res) ? (a22 + (r1 >> _res)) >> (s1 - _res) : (a22 << (_res - s1));
   /*Now compute the inverse transform.*/
   b0=qr_ilog(QR_MAXI(QR_MAXI(abs(dx10),abs(dx20)),abs(dx30)))+
    qr_ilog(QR_MAXI(abs(_hom->fwd[0][0]),abs(_hom->fwd[1][0])));
@@ -3413,7 +3413,7 @@ static int qr_code_data_parse(qr_code_data *_qrdata,int _version,
           Values 100...164, 191...196, and 223...255 are invalid, so we reject
            them here.*/
         bits=qr_pack_buf_read(&qpb,8);
-        if(!(bits>=0&&bits<100||bits>=165&&bits<191||bits>=197&&bits<223)){
+        if(!((bits>=0&&bits<100) || (bits>=165&&bits<191) || (bits >= 197 && bits < 223))){
           return -1;
         }
         entry->payload.ai=bits;
